@@ -1,66 +1,128 @@
-# Chess Game Review — Simplified Python
+# Chess Game Review
 
-This is the fixed-setting version of the Python chess reviewer. The only user input is a PGN.
+Chess Game Review is a Python program that analyzes a completed chess game with
+Stockfish. Paste a game in PGN format and the program reviews every move, shows
+which player has the stronger position, suggests better lines, and estimates
+how strongly each player performed in that game.
+
+## Features
+
+- Reviews every move with Stockfish.
+- Uses nine move labels: Best, Excellent, Good, Inaccuracy, Mistake, Blunder,
+  Missed win, Missed mate, and Forced.
+- Shows each player's position share after every move.
+- Shows Stockfish's White-win, draw, and Black-win forecast.
+- Prints a suggested best line after a non-best move when one is available.
+- Rechecks important or uncertain positions with a deeper search.
+- Gives each player a rough single-game Elo estimate and a wide plausible range.
+
+## Requirements
+
+- Python 3.10 or newer
+- Stockfish
+- The Python package listed in `requirements.txt`
+
+Stockfish is a separate chess engine and is not included in this repository.
 
 ## One-time setup
 
-Create a Python environment and install the project's single Python dependency:
+Create a Python environment and install the required Python package:
 
 ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
 ```
 
-Install native Stockfish on macOS if it is not already installed:
+On macOS, Stockfish can be installed with Homebrew:
 
 ```bash
 brew install stockfish
 ```
 
-The program automatically searches this folder's optional `bin` directory, common installation locations, and the system PATH. There are no engine-path or strength settings to enter.
+You can also download Stockfish from its official website. If it is not
+installed in a normal system location, place the executable in the project's
+`bin` folder and name it `stockfish` or `stockfish.exe`.
 
-It also recognizes the normal folder created by the official macOS Stockfish download. On this Mac it automatically finds the existing Stockfish 18 program in `Downloads`.
+The program searches automatically for Stockfish in:
 
-## Run it in any code editor
+- The project's `bin` folder
+- Common macOS, Linux, and Windows installation locations
+- The system PATH
+- The usual folder created by the official macOS Stockfish download
+
+## Run the program
 
 1. Open this project folder in your code editor.
-2. Make sure the editor uses this project's `.venv` Python environment.
+2. Select the Python interpreter inside the project's `.venv` folder.
 3. Open `main.py` and use the editor's normal **Run** command.
 4. Paste the complete PGN.
 5. Enter `END` on a new line.
 
-The editor must run `main.py` in a console that accepts keyboard input. No terminal options, filenames, or settings are entered into the program; the PGN is its only user input.
+The editor must run `main.py` in a console that accepts keyboard input. The PGN
+is the only information the program asks the user to enter.
 
-## Simple framework
+You can also start it from a terminal:
+
+```bash
+.venv/bin/python main.py
+```
+
+## How it works
 
 ```text
 main.py
-  asks for the PGN and prints the result
+  collects the PGN and displays progress
        ↓
 chess_review.py
-  reads the game, runs Stockfish, grades moves, and builds the report
+  reads the game and rebuilds every board position
        ↓
 Stockfish
-  supplies the chess calculations
+  examines the strongest choices in each position
+       ↓
+chess_review.py
+  compares the played moves, assigns labels, estimates performance,
+  and builds the report
+       ↓
+main.py
+  prints the completed review
 ```
 
-## What was removed from Version 1
+Every unfinished position receives a 30,000-node Stockfish search. Important or
+uncertain positions are checked again with 150,000 nodes. A node is one position
+Stockfish reaches while considering possible future moves.
 
-- Terminal commands and their parser
-- PGN filename and piped-input choices
-- Quick, Balanced, Deep, and custom-node choices
-- JSON output
-- User-supplied engine paths and environment settings
-- Package launcher files and installable command setup
-- Separate files used only to divide the same review process
-- Parsed move fields that the review never used
+## Understanding the percentages
 
-The fixed Balanced analysis, adaptive rechecks, nine labels, percentages, best lines, and Elo estimates were kept.
+W/D/L means Stockfish's White-win, draw, and Black-win forecast.
 
-## Fixed analysis quality
+The two player percentages are position shares. Each player receives half of
+the draw chance, so the two shares always total 100%. For example:
 
-- Every non-finished position: 30,000 Stockfish nodes with the best two choices.
-- Important or uncertain positions: rechecked at 150,000 nodes.
-- All nine labels, player percentages, best lines, and both Elo estimates are retained.
+```text
+White win: 40% | Draw: 40% | Black win: 20%
+White share: 60% | Black share: 40%
+```
 
-The Elo result is a low-confidence estimate from one game, not a real rating measurement.
+## Project files
+
+```text
+main.py                    User input, progress, and printed output
+chess_review.py            PGN reading, Stockfish analysis, labels, and report
+requirements.txt           Required Python package
+tests/test_chess_review.py Automatic checks for the main review calculations
+bin/README.md              Instructions for the optional local Stockfish file
+```
+
+## Run the tests
+
+The tests use small prepared positions and do not start Stockfish:
+
+```bash
+.venv/bin/python -m unittest discover -s tests -v
+```
+
+## Important limitation
+
+The Elo result describes performance in one game only. It is not an official or
+reliable measurement of a player's true rating. A real rating requires results
+from many games against rated opponents.
