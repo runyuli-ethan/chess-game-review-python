@@ -1,0 +1,3 @@
+# python-chess supplies the chess rules, PGN reader, and Stockfish connection.
+# == keeps everyone on the exact tested version instead of silently changing it.
+chess==1.11.2
